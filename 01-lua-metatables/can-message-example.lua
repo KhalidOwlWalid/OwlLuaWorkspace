@@ -8,12 +8,15 @@ function CANMessage:new(id, name, data_fields, update_freq) -- val_updater() ens
         _values = {},
         _update_freq = update_freq,
         _last_sent = 0,                                              --set to zero so that you don't get a null error
-        _callback_fn = nil, --function that is realised in the instances, specific to the sensor type and what the sensor function returns
+        -- Set to nil initially to ensure proper assertion can be done later
+        _callback_fn = nil,
     }
     setmetatable(instance, CANMessage)
     return instance
 end
 
+-- Function that helps in registering callbacks and ensuring the functions is valid
+-- If function is invalid, it will not work, and would simply keep the _callback_fn as nil
 function CANMessage:register_callback(callback_fn)
     if (type(callback_fn) == "function") then
         print("Callback registered for ".. self._name)
@@ -29,7 +32,7 @@ end
 function CANMessage:build_fields()
     if (self._callback_fn ~= nil) then
         local updated_values = self:_callback_fn()
-        -- Do something with your returned values
+        -- Do whatever you want with the returned values
         print(updated_values[1])
         print(updated_values[2])
         print(updated_values[3])
@@ -65,5 +68,7 @@ end
 
 local vibration_data = VibrationData:new()
 local wrong_callback = "example"
-local status = vibration_data:register_callback(wrong_callback)
+-- local status = vibration_data:register_callback(wrong_callback)
+-- Notice the use of 
+local status = vibration_data:register_callback(vibration_data.callback)
 vibration_data:build_fields()
